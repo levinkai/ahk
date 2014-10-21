@@ -36,6 +36,7 @@ BMService()
 	}
 	Else
 	{
+		CheckTimeFunc()
 		GameCheckFunc()
 	}
 	IfExist,empty.exe
@@ -199,6 +200,82 @@ GetGame()
 			return 0
 		}
 	}
+}
+
+CheckTimeFunc()
+{
+	;Todo 当显示器亮的时候进行判断
+	idletime = %A_TimeIdle%
+	idletime //= (60*1000)
+	if idletime <= 10 ;用户十分钟之内动键盘、鼠标了
+	{
+		IfExist,BMServer.ini
+		{
+			IniRead,restflag,BMServer.ini,restflag,rest ;读取休息标志
+			if restflag = 0 ;休息标志为零，则判断运行时间，运行大于五十分钟则提示需要休息，五分钟后灭屏，且写入休息标志和时间
+			{
+				if (1 = CompareTime(50)) ;电脑运行五十分钟
+				{
+					MsgBox,,提示,需要休息十分钟，一分钟后灭屏,1
+					IniWrite,1,BMServer.ini,restflag,rest
+					IniWrite,%A_Now%,BMServer.ini,timestamp,time
+					;SetTimer,CloseLcd,-300000
+				}
+			}
+			Else ;休息标志为1，判断记录的时间和当前时间，小于十分钟则提示需要休息，立即灭屏
+			{
+				if (0 = CompareTime(10))
+				{
+					MsgBox,,提示,还未休息十分钟,1
+					IniWrite,%A_Now%,BMServer.ini,timestamp,time
+					CloseLcdFunc()
+				}
+			}
+		}
+		Else ;ini文件不存在，创建文件
+		{
+		FileAppend,
+		(
+[timestamp]
+time = %A_Now%
+[restflag]
+rest = 0
+		),BMServer.ini
+		if ErrorLevel
+			MsgBox,,提示,创建ini失败,1
+		}
+
+	}
+	else ;用户十分钟没有动作，确认已休息十分钟
+	{
+		IfExist,BMServer.ini
+		{
+			IniRead,restflag,BMServer.ini,restflag,rest ;
+			if restflag = 1 ;休息标志为1，已休息十分钟，重置标志
+				IniWrite,0,BMServer.ini,restflag,rest
+
+			IniWrite,%A_Now%,BMServer.ini,timestamp,time ;用户休息满十分钟，重置时间
+		}
+	}
+}
+
+CompareTime(time)
+{
+	IniRead,recordtime,BMServer.ini,timestamp,time
+	currentime = %A_Now%,
+	EnvSub, currentime, %recordtime%, Minutes
+	if currentime >= %time%
+		return 1
+	else
+		return 0
+}
+
+CloseLcdFunc()
+{
+	Sleep 200 ;缓冲时间
+	SendMessage, 0x112, 0xF170, 2,, Program Manager  ; 0x112 为 WM_SYSCOMMAND, 0xF170 为 SC_MONITORPOWER.
+	; 对上面命令的注释: 使用 -1 代替 2 来打开显示器.
+	; 使用 1 代替 2 来激活显示器的节能模式.
 }
 
 ^!F2::
