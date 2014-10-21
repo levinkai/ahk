@@ -27,7 +27,6 @@ return
 ;主程序，对时间、游戏开始、结束、玩的时间进行判断处理
 BMService()
 {
-	global starttime, endtime, gametime, currentime, gamename
 	;晚十点强制关机
 	if A_Hour >= 22
 	{
@@ -37,99 +36,105 @@ BMService()
 	}
 	Else
 	{
-		if GetGame() != 0
-		{
-			Process,Exist,%gamename%
-
-			NewPID = %ErrorLevel%
-			currentime = %A_Now%
-
-			;判断游戏是否运行，是则进行处理，否则继续
-			if NewPID != 0
-			{
-				;间断玩了半个小时游戏，需要休息
-				if gametime >= 30
-				{
-					gametime = 0
-					endtime = %A_Now%
-					MsgBox,,提示,需要休息半个小时才能玩！,1
-					Process,Close,%gamename%
-				}
-				Else
-				{
-					;如果结束时间不为零，需要判断休息时间
-					if endtime != 0
-					{
-						EnvSub, currentime, %endtime%, Minutes ;如果不为零，说明游戏结束后又运行了，计算结束经过的分钟
-
-						if currentime = 0
-						{
-							MsgBox,,提示,需要休息半个小时才能玩！,1
-							Process,Close,%gamename%
-						}
-						else if currentime <= 30
-						{
-							endtime = %A_Now%
-							starttime = 0
-							MsgBox,,提示,刚休息%currentime%分钟就玩，从现在重新计时！,1
-							Process,Close,%gamename%
-						}
-						Else
-						{
-							endtime =0
-							gametime = 0
-							starttime = %A_Now%
-							MsgBox,,提示,休息满半个小时，可以玩。,1
-						}
-					}
-					Else
-					{ ;游戏还未结束
-						if starttime = 0
-						{
-							starttime = %A_Now% ;如果开始时间为零，说明游戏刚开始，记录开始时间
-							;MsgBox,,提示,游戏开始！,1
-						}
-						else
-						{
-							EnvSub, currentime, %starttime%, Minutes ;如果不为零，说明游戏开始一段时间了，计算经过的分钟
-
-							if currentime >= 30
-							{
-								endtime = %A_Now%
-								starttime = 0
-								MsgBox,,提示,玩半个小时了，需要休息！,1
-								Process,Close,%gamename%
-							}
-							Else
-							{
-								;MsgBox,,,游戏继续。。。,3
-							}
-						}
-					}
-				}
-			}
-			Else
-			{
-				;MsgBox,,,游戏未运行,3
-				;开始时间不为零，计算玩的时间
-				if starttime != 0
-				{
-					EnvSub, currentime, %starttime%, Minutes ;游戏未运行，但是开始时间不为零，说明用户玩游戏了，计算玩的总时间
-					if gametime > 0
-					{
-						gametime += %currentime%
-						MsgBox,,提示,玩了总共%gametime%分钟游戏 ,1
-					}
-					starttime = 0
-				}
-			}
-		}
+		GameCheckFunc()
 	}
 	IfExist,empty.exe
 		RunWait, empty.exe %A_ScriptName%,,Hide UseErrorLevel
 	return
 }
 
+GameCheckFunc()
+{
+	global starttime, endtime, gametime, currentime, gamename
+
+	if GetGame() != 0
+	{
+		Process,Exist,%gamename%
+
+		NewPID = %ErrorLevel%
+		currentime = %A_Now%
+
+		;判断游戏是否运行，是则进行处理，否则继续
+		if NewPID != 0
+		{
+			;间断玩了半个小时游戏，需要休息
+			if gametime >= 30
+			{
+				gametime = 0
+				endtime = %A_Now%
+				MsgBox,,提示,需要休息半个小时才能玩！,1
+				Process,Close,%gamename%
+			}
+			Else
+			{
+				;如果结束时间不为零，需要判断休息时间
+				if endtime != 0
+				{
+					EnvSub, currentime, %endtime%, Minutes ;如果不为零，说明游戏结束后又运行了，计算结束经过的分钟
+
+					if currentime = 0
+					{
+						MsgBox,,提示,需要休息半个小时才能玩！,1
+						Process,Close,%gamename%
+					}
+					else if currentime <= 30
+					{
+						endtime = %A_Now%
+						starttime = 0
+						MsgBox,,提示,刚休息%currentime%分钟就玩，从现在重新计时！,1
+						Process,Close,%gamename%
+					}
+					Else
+					{
+						endtime =0
+						gametime = 0
+						starttime = %A_Now%
+						MsgBox,,提示,休息满半个小时，可以玩。,1
+					}
+				}
+				Else
+				{ ;游戏还未结束
+					if starttime = 0
+					{
+						starttime = %A_Now% ;如果开始时间为零，说明游戏刚开始，记录开始时间
+						;MsgBox,,提示,游戏开始！,1
+					}
+					else
+					{
+						EnvSub, currentime, %starttime%, Minutes ;如果不为零，说明游戏开始一段时间了，计算经过的分钟
+
+						if currentime >= 30
+						{
+							endtime = %A_Now%
+							starttime = 0
+							MsgBox,,提示,玩半个小时了，需要休息！,1
+							Process,Close,%gamename%
+						}
+						Else
+						{
+							;MsgBox,,,游戏继续。。。,3
+						}
+					}
+				}
+			}
+		}
+		Else
+		{
+			;MsgBox,,,游戏未运行,3
+			;开始时间不为零，计算玩的时间
+			if starttime != 0
+			{
+				EnvSub, currentime, %starttime%, Minutes ;游戏未运行，但是开始时间不为零，说明用户玩游戏了，计算玩的总时间
+				if gametime > 0
+				{
+					gametime += %currentime%
+					MsgBox,,提示,玩了总共%gametime%分钟游戏 ,1
+				}
+				starttime = 0
+			}
+		}
+	}
+}
 ;判断游戏是否在运行
 GameExistFlag(name)
 {
