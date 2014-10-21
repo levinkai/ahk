@@ -43,7 +43,7 @@ BMService()
 		RunWait, empty.exe %A_ScriptName%,,Hide UseErrorLevel
 	return
 }
-
+;处理游戏
 GameCheckFunc()
 {
 	global starttime, endtime, gametime, currentime, gamename
@@ -201,7 +201,7 @@ GetGame()
 		}
 	}
 }
-
+;电脑连续运行五十分钟需要灭屏休息
 CheckTimeFunc()
 {
 	;Todo 当显示器亮的时候进行判断
@@ -258,7 +258,7 @@ rest = 0
 		}
 	}
 }
-
+;比较是否达到要求的时间
 CompareTime(time)
 {
 	IniRead,recordtime,BMServer.ini,timestamp,time
@@ -269,7 +269,7 @@ CompareTime(time)
 	else
 		return 0
 }
-
+;关闭显示屏
 CloseLcdFunc()
 {
 	Sleep 200 ;缓冲时间
@@ -278,12 +278,13 @@ CloseLcdFunc()
 	; 使用 1 代替 2 来激活显示器的节能模式.
 }
 
+;退出快捷键
 ^!F2::
 MsgBox,,提示,程序退出 ,1
 ExitApp
 Return
-
-^!t::
+;取消关机快捷键
+^!s::
 MsgBox,4,提示,取消关机？ ,3
 IfMsgBox yes
 	SetTimer,shutdownos,Off
