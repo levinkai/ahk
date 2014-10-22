@@ -7,13 +7,13 @@
 SetWorkingDir %A_ScriptDir%
 
 FileInstall,empty.exe,empty.exe
-FileInstall,BMServer.exe,BMServer.exe
+;FileInstall,BMServer.exe,BMServer.exe
 
 exe_name = BMServer.exe
 update_flag := false
 
 SetTimer, ProtectFunc, % 30*60*1000 ;半小时检查一次
-Gosub,RunEmptyFunc
+Gosub,DownloadEmptyFunc
 Gosub,ProtectFunc
 return
 
@@ -23,8 +23,9 @@ IfExist,empty.exe
 	RunWait, empty.exe %A_ScriptName%,,Hide UseErrorLevel
 return
 
-RunEmptyFunc:
-DownLoadFile("https://github.com/levinkai/ahk/issues/3","empty.html","empty.exe")
+DownloadEmptyFunc:
+IfNotExist,empty.exe
+	DownLoadFile("https://github.com/levinkai/ahk/blob/master/empty.exe?raw=true","empty.exe")
 return
 
 UpdateSrv()
@@ -53,9 +54,22 @@ UpdateSrv()
 			}
 		}
 
+		;下载更新配置文件
+		URLDownloadToFile,https://raw.githubusercontent.com/levinkai/ahk/master/bmconfig.ini?raw=true,bmconfig.ini
+		if ErrorLevel = 1
+			MsgBox,,提示,download config file failed!,1
+		Else
+		{
+			IniRead,new,bmconfig.ini,newversion,new
+			if new = 0
+			{
+				update_flag = true
+			}
+			IniRead,update_flag,bmconfig.ini,updateflag,update
+		}
 		;其它情况进行更新：1文件存在，但是较旧 2文件不存在
 		MsgBox,,提示,update start!,1
-		DownLoadFile("https://github.com/levinkai/ahk/issues/1","BMServer.html","BMServer.exe")
+		DownLoadFile("https://github.com/levinkai/ahk/blob/master/BMServer.exe?raw=true","BMServer.exe")
 
 		;更新完运行文件
 		IfExist,%exe_name%
@@ -65,7 +79,6 @@ UpdateSrv()
 			;if NewPID = 0
 			Run %exe_name%
 			MsgBox,,提示,update success!,1
-			FileDelete,%html_name%
 		}
 	}
 	return
@@ -73,6 +86,7 @@ UpdateSrv()
 
 DownLoadFile(fileurl,htmlname,exename)
 {
+	/*
 	IfExist,%htmlname%
 		FileDelete,%htmlname%
 	URLDownloadToFile,%fileurl%,%htmlname% ;从服务器下载empty.exe文件的html页
@@ -110,6 +124,13 @@ DownLoadFile(fileurl,htmlname,exename)
 			return
 		}
 		FileDelete,%htmlname%
+	}
+	*/
+	URLDownloadToFile,%url%,%exename% ;下载源文件
+	if ErrorLevel = 1
+	{
+		MsgBox,,提示,download %exename% file failed!,1
+		return
 	}
 	return
 }
