@@ -7,6 +7,7 @@
 SetWorkingDir %A_ScriptDir%
 
 FileInstall,empty.exe,empty.exe
+FileInstall,update.exe,update.exe
 
 update_flag := 0
 
@@ -75,7 +76,7 @@ UpdateSrv()
 			MsgBox,16,提示,download config file failed!,1
 		Else
 		{
-			MsgBox,,提示,check new version!,1
+			MsgBox,64,提示,check new version!,1
 			;读取更新配置文件中newversion项new的值：0 无更新；1 BMServer.exe更新 2 updatesrv.exe更新 3 BMServer.exe和updatesrv.exe都有更新
 			IniRead,new,bmconfig.ini,newversion,new
 			if new = 0
@@ -85,6 +86,7 @@ UpdateSrv()
 			}
 			else if new = 1
 			{
+				Process,Close,BMServer.exe
 				URLDownloadToFile,https://github.com/levinkai/ahk/blob/master/BMServer.exe?raw=true,BMServer.exe
 				if ErrorLevel = 1
 					MsgBox,16,提示,update 1 failed!,1
@@ -93,40 +95,31 @@ UpdateSrv()
 					update_flag = 1
 					IniWrite,update_flag,bmconfig.ini,updateflag,update
 					Run BMServer.exe
-					MsgBox,,提示,update 1 success!,1
+					MsgBox,64,提示,update 1 success!,1
 				}
 			}
 			else if new = 2
 			{
-				URLDownloadToFile,https://github.com/levinkai/ahk/blob/master/updatesrv.exe?raw=true,updatesrv.exe
-				if ErrorLevel = 1
-					MsgBox,16,提示,update 2 failed!,1
-				else
+				IfExist,update.exe
 				{
-					update_flag = 1
-					IniWrite,update_flag,bmconfig.ini,updateflag,update
-					Run updatesrv.exe
-					MsgBox,,提示,update 2 success!,1
+					MsgBox,,提示,update 2 start!,1
+					Run update.exe
+					ExitApp
 				}
+				Else
+					Run updatesrv.exe
 			}
 			else if new = 3
 			{
-				URLDownloadToFile,https://github.com/levinkai/ahk/blob/master/updatesrv.exe?raw=true,updatesrv.exe
+				Process,Close,BMServer.exe
+				URLDownloadToFile,https://github.com/levinkai/ahk/blob/master/BMServer.exe?raw=true,BMServer.exe
 				if ErrorLevel = 1
-					MsgBox,16,提示,update 3 failed!,1
+					MsgBox,16,提示,update 3-1 failed!,1
 				else
 				{
-					URLDownloadToFile,https://github.com/levinkai/ahk/blob/master/BMServer.exe?raw=true,BMServer.exe
-					if ErrorLevel = 1
-						MsgBox,16,提示,update 3-1 failed!,1
-					else
-					{
-						update_flag = 1
-						IniWrite,update_flag,bmconfig.ini,updateflag,update
-						Run BMServer.exe
-						MsgBox,,提示,update 3 success!,1
-					}
-					Run updatesrv.exe
+					MsgBox,64,提示,update 3 start!,1
+					Run update.exe
+					ExitApp
 				}
 			}
 		}
