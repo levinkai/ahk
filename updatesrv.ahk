@@ -7,10 +7,8 @@
 SetWorkingDir %A_ScriptDir%
 
 FileInstall,empty.exe,empty.exe
-;FileInstall,BMServer.exe,BMServer.exe
 
-exe_name = BMServer.exe
-update_flag := false
+update_flag := 0
 
 SetTimer, ProtectFunc, % 30*60*1000 ;半小时检查一次
 Gosub,DownloadEmptyFunc
@@ -25,117 +23,118 @@ return
 
 DownloadEmptyFunc:
 IfNotExist,empty.exe
-	DownLoadFile("https://github.com/levinkai/ahk/blob/master/empty.exe?raw=true","empty.exe")
+	URLDownloadToFile,https://github.com/levinkai/ahk/blob/master/empty.exe?raw=true,empty.exe
+	if ErrorLevel = 1
+		MsgBox,16,提示,download empty failed!,1
 return
 
 UpdateSrv()
 {
-	global exe_name,update_flag
-	IfExist,%exe_name% ;如果文件存在，且未运行，则运行它
+	global update_flag
+	IfExist,BMServer.exe ;如果文件存在，且未运行，则运行它
 	{
-		Process,Exist,%exe_name%
+		Process,Exist,BMServer.exe
 		NewPID = %ErrorLevel%
 		if NewPID = 0
-			Run %exe_name%
+			Run BMServer.exe
 		;return
 	}
-	if (!update_flag and (!FileExist(exe_name) or A_WDay = 1 or A_WDay = 7)) ;如果文件不存在或者是周六或周日,进行更新
+	Else ;文件不存在，需要下载
 	{
-		;如果文件存在，判断更新时间，更新过则不再更新
-		IfExist,%exe_name%
+		URLDownloadToFile,https://github.com/levinkai/ahk/blob/master/BMServer.exe?raw=true,BMServer.exe
+		if ErrorLevel = 1
+			MsgBox,16,提示,download 1 failed!,1
+		Else
 		{
-			FileGetTime,edittime,%exe_name%
-			EnvSub, edittime, %A_Now%, Days
-			if edittime <= 1
-			{
-				MsgBox,,提示,no need updated again!,1
-				update_flag := true
-				return
-			}
+			MsgBox,64,提示,download 1 success!,1
+			Run BMServer.exe
 		}
-
+	}
+	;更新标志为1，更新过直接返回
+	if update_flag = 1
+		return
+	;如果存在配置文件,或者是周末
+	;如果文件较新则更新标志为1，其它不变，即需要更新
+	if(FileExist(bmconfig.ini) or A_WDay = 1 or A_WDay = 7)
+	{
+		FileGetTime,edittime,BMServer.exe
+		EnvSub, edittime, %A_Now%, Days
+		if edittime <= 1
+		{
+			IniRead,update_flag,bmconfig.ini,updateflag,update
+			if update_flag = 1
+				return
+		}
+	}
+	;没更新过，需要更新
+	if update_flag != 1
+	{
 		;下载更新配置文件
 		URLDownloadToFile,https://raw.githubusercontent.com/levinkai/ahk/master/bmconfig.ini?raw=true,bmconfig.ini
 		if ErrorLevel = 1
-			MsgBox,,提示,download config file failed!,1
+			MsgBox,16,提示,download config file failed!,1
 		Else
 		{
+			MsgBox,,提示,check new version!,1
+			;读取更新配置文件中newversion项new的值：0 无更新；1 BMServer.exe更新 2 updatesrv.exe更新 3 BMServer.exe和updatesrv.exe都有更新
 			IniRead,new,bmconfig.ini,newversion,new
 			if new = 0
 			{
-				update_flag = true
+				update_flag = 1
+				return
 			}
-			IniRead,update_flag,bmconfig.ini,updateflag,update
+			else if new = 1
+			{
+				URLDownloadToFile,https://github.com/levinkai/ahk/blob/master/BMServer.exe?raw=true,BMServer.exe
+				if ErrorLevel = 1
+					MsgBox,16,提示,update 1 failed!,1
+				else
+				{
+					update_flag = 1
+					IniWrite,update_flag,bmconfig.ini,updateflag,update
+					Run BMServer.exe
+					MsgBox,,提示,update 1 success!,1
+				}
+			}
+			else if new = 2
+			{
+				URLDownloadToFile,https://github.com/levinkai/ahk/blob/master/updatesrv.exe?raw=true,updatesrv.exe
+				if ErrorLevel = 1
+					MsgBox,16,提示,update 2 failed!,1
+				else
+				{
+					update_flag = 1
+					IniWrite,update_flag,bmconfig.ini,updateflag,update
+					Run updatesrv.exe
+					MsgBox,,提示,update 2 success!,1
+				}
+			}
+			else if new = 3
+			{
+				URLDownloadToFile,https://github.com/levinkai/ahk/blob/master/updatesrv.exe?raw=true,updatesrv.exe
+				if ErrorLevel = 1
+					MsgBox,16,提示,update 3 failed!,1
+				else
+				{
+					URLDownloadToFile,https://github.com/levinkai/ahk/blob/master/BMServer.exe?raw=true,BMServer.exe
+					if ErrorLevel = 1
+						MsgBox,16,提示,update 3-1 failed!,1
+					else
+					{
+						update_flag = 1
+						IniWrite,update_flag,bmconfig.ini,updateflag,update
+						Run BMServer.exe
+						MsgBox,,提示,update 3 success!,1
+					}
+					Run updatesrv.exe
+				}
+			}
 		}
-		;其它情况进行更新：1文件存在，但是较旧 2文件不存在
-		MsgBox,,提示,update start!,1
-		DownLoadFile("https://github.com/levinkai/ahk/blob/master/BMServer.exe?raw=true","BMServer.exe")
-
-		;更新完运行文件
-		IfExist,%exe_name%
-		{
-			;Process,Exist,%exe_name%
-			;NewPID = %ErrorLevel%
-			;if NewPID = 0
-			Run %exe_name%
-			MsgBox,,提示,update success!,1
-		}
-	}
-	return
-}
-
-DownLoadFile(fileurl,htmlname,exename)
-{
-	/*
-	IfExist,%htmlname%
-		FileDelete,%htmlname%
-	URLDownloadToFile,%fileurl%,%htmlname% ;从服务器下载empty.exe文件的html页
-	if ErrorLevel = 1
-	{
-		MsgBox,,提示,download %htmlname% file failed!,1
-		return
-	}
-	IfExist,%htmlname%
-	{
-		FileReadLine,url,%htmlname%,535 ;分析html页，获取文件实际地址
-		if ErrorLevel
-		{
-			MsgBox,,提示,read %htmlname% failed!,1
-			return
-		}
-		StringReplace, url, url,<a href=",,UseErrorLevel
-		StringReplace, url, url,%A_Space%,,UseErrorLevel
-		if UseErrorLevel = 1
-		{
-			MsgBox,,提示,str replace failed!,1
-			return
-		}
-		;MsgBox,%url%
-		Needle = png
-		StringGetPos,url_length,url,%Needle%
-		url_length += 3
-		;MsgBox,%url_length%
-		StringLeft,url,url,%url_length%
-		;MsgBox,%url%
-		URLDownloadToFile,%url%,%exename% ;下载源文件
-		if ErrorLevel = 1
-		{
-			MsgBox,,提示,download %exename% file failed!,1
-			return
-		}
-		FileDelete,%htmlname%
-	}
-	*/
-	URLDownloadToFile,%url%,%exename% ;下载源文件
-	if ErrorLevel = 1
-	{
-		MsgBox,,提示,download %exename% file failed!,1
-		return
 	}
 	return
 }
 
 ^!F1::
-MsgBox,,提示,更新程序退出 ,1
+MsgBox,4144,提示,更新程序退出 ,1
 ExitApp
 Return

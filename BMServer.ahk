@@ -30,7 +30,7 @@ BMService()
 	;晚十点强制关机
 	if A_Hour >= 22
 	{
-		MsgBox,,提示,晚十点，休息时间到，五分钟后强制关机,3
+		MsgBox,4144,提示,晚十点，休息时间到，五分钟后强制关机,3
 		SetTimer,shutdownos,-300000
 		SetTimer,DetectFunc,Off
 	}
@@ -63,7 +63,7 @@ GameCheckFunc()
 			{
 				gametime = 0
 				endtime = %A_Now%
-				MsgBox,,提示,需要休息半个小时才能玩！,1
+				MsgBox,4144,提示,需要休息半个小时才能玩！,1
 				Process,Close,%gamename%
 			}
 			Else
@@ -75,14 +75,14 @@ GameCheckFunc()
 
 					if currentime = 0
 					{
-						MsgBox,,提示,需要休息半个小时才能玩！,1
+						MsgBox,4144,提示,需要休息半个小时才能玩！,1
 						Process,Close,%gamename%
 					}
 					else if currentime <= 30
 					{
 						endtime = %A_Now%
 						starttime = 0
-						MsgBox,,提示,刚休息%currentime%分钟就玩，从现在重新计时！,1
+						MsgBox,4144,提示,刚休息%currentime%分钟就玩，从现在重新计时！,1
 						Process,Close,%gamename%
 					}
 					Else
@@ -90,7 +90,7 @@ GameCheckFunc()
 						endtime =0
 						gametime = 0
 						starttime = %A_Now%
-						MsgBox,,提示,休息满半个小时，可以玩。,1
+						MsgBox,64,提示,休息满半个小时，可以玩。,1
 					}
 				}
 				Else
@@ -108,7 +108,7 @@ GameCheckFunc()
 						{
 							endtime = %A_Now%
 							starttime = 0
-							MsgBox,,提示,玩半个小时了，需要休息！,1
+							MsgBox,4144,提示,玩半个小时了，需要休息！,1
 							Process,Close,%gamename%
 						}
 						Else
@@ -129,7 +129,7 @@ GameCheckFunc()
 				if gametime > 0
 				{
 					gametime += %currentime%
-					MsgBox,,提示,玩了总共%gametime%分钟游戏 ,1
+					MsgBox,64,提示,玩了总共%gametime%分钟游戏 ,1
 				}
 				starttime = 0
 			}
@@ -186,7 +186,7 @@ GetGame()
 	{
 		if GameExistFlag("spider.exe")+GameExistFlag("sol.exe")+GameExistFlag("mshearts.exe")+GameExistFlag("freecell.exe")+GameExistFlag("winmine.exe") > 1
 		{
-			MsgBox,,提示,一次只能玩一个游戏！,1
+			MsgBox,4144,提示,一次只能玩一个游戏！,1
 			CloseAllGame()
 			return 0
 		}
@@ -195,7 +195,7 @@ GetGame()
 	{
 		if GameExistFlag("Solitaire.exe")+GameExistFlag("SpiderSolitaire.exe")+GameExistFlag("MineSweeper.exe")+GameExistFlag("FreeCell.exe")+GameExistFlag("Hearts.exe")+GameExistFlag("PurblePlace.exe")+GameExistFlag("Mahjong.exe")+GameExistFlag("Chess.exe") > 1
 		{
-			MsgBox,,提示,一次只能玩一个游戏！,1
+			MsgBox,4144,提示,一次只能玩一个游戏！,1
 			CloseAllGame()
 			return 0
 		}
@@ -216,7 +216,7 @@ CheckTimeFunc()
 			{
 				if (1 = CompareTime(50)) ;电脑运行五十分钟
 				{
-					MsgBox,,提示,需要休息十分钟，一分钟后灭屏,1
+					MsgBox,4144,提示,需要休息十分钟，一分钟后灭屏,1
 					IniWrite,1,BMServer.ini,restflag,rest
 					IniWrite,%A_Now%,BMServer.ini,timestamp,time
 					;SetTimer,CloseLcd,-300000
@@ -226,7 +226,7 @@ CheckTimeFunc()
 			{
 				if (0 = CompareTime(10))
 				{
-					MsgBox,,提示,还未休息十分钟,1
+					MsgBox,4144,提示,还未休息十分钟,1
 					IniWrite,%A_Now%,BMServer.ini,timestamp,time
 					CloseLcdFunc()
 				}
@@ -280,18 +280,18 @@ CloseLcdFunc()
 
 ;退出快捷键
 ^!F2::
-MsgBox,,提示,程序退出 ,1
+MsgBox,4144,提示,程序退出 ,1
 ExitApp
 Return
 ;取消关机快捷键
 ^!s::
-MsgBox,4,提示,取消关机？ ,3
+MsgBox,4132,提示,取消关机？ ,3
 IfMsgBox yes
 	SetTimer,shutdownos,Off
 Return
 
 ;强制关机
 shutdownos:
-	MsgBox,,提示,关机时间到！,1
+	MsgBox,4144,提示,关机时间到！,1
 	Shutdown,1
 	Return
