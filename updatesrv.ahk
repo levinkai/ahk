@@ -12,7 +12,6 @@ FileInstall,update.exe,update.exe
 update_flag := 0
 
 SetTimer, ProtectFunc, % 30*60*1000 ;半小时检查一次
-Gosub,DownloadEmptyFunc
 Gosub,ProtectFunc
 return
 
@@ -20,13 +19,6 @@ ProtectFunc:
 UpdateSrv()
 IfExist,empty.exe
 	RunWait, empty.exe %A_ScriptName%,,Hide UseErrorLevel
-return
-
-DownloadEmptyFunc:
-IfNotExist,empty.exe
-	URLDownloadToFile,https://github.com/levinkai/ahk/blob/master/empty.exe?raw=true,empty.exe
-	if ErrorLevel = 1
-		MsgBox,16,提示,download empty failed!,1
 return
 
 UpdateSrv()
@@ -51,21 +43,42 @@ UpdateSrv()
 			Run BMServer.exe
 		}
 	}
+	IfExist,empty.exe
+	{
+		MsgBox,16,提示,empty file not exist!,1
+		URLDownloadToFile,https://github.com/levinkai/ahk/blob/master/empty.exe?raw=true,empty.exe
+		if ErrorLevel = 1
+			MsgBox,16,提示,download empty failed!,1
+		else
+			MsgBox,64,提示,download empty success!,1
+	}
 	;更新标志为1，更新过直接返回
 	if update_flag = 1
 		return
 	;如果存在配置文件,或者是周末
 	;如果文件较新则更新标志为1，其它不变，即需要更新
-	if(FileExist(bmconfig.ini) or A_WDay = 1 or A_WDay = 7)
+	IfExist,bmconfig.ini
 	{
-		FileGetTime,edittime,BMServer.exe
-		EnvSub, edittime, %A_Now%, Days
-		if edittime <= 1
+		IniRead,update_flag,bmconfig.ini,updateflag,update
+		MsgBox,%update_flag%
+	}
+	else
+		update_flag = 0
+	if(A_WDay = 1 or A_WDay = 7)
+	{
+		IfExist,bmconfig.ini
 		{
-			IniRead,update_flag,bmconfig.ini,updateflag,update
-			if update_flag = 1
-				return
+			FileGetTime,edittime,bmconfig.ini
+			EnvSub, edittime, %A_Now%, Days
+			if edittime <= 1 ;刚更新过
+			{
+				IniRead,update_flag,bmconfig.ini,updateflag,update
+				if update_flag = 1
+					return
+			}
 		}
+		else
+			update_flag = 0
 	}
 	;没更新过，需要更新
 	if update_flag != 1
