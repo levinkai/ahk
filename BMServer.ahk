@@ -260,6 +260,12 @@ rest = 0
 		),BMServer.ini
 		if ErrorLevel
 			MsgBox,,提示,创建ini失败,1
+		else
+		{
+			FileSetAttrib, +H, BMServer.ini
+			if ErrorLevel != 0
+				MsgBox,16,提示,set attrib failed!,1
+		}
 		}
 
 	}
