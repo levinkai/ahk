@@ -17,7 +17,7 @@ return
 
 ProtectFunc:
 UpdateSrv()
-IfExist,empty.exe
+if(FileExist(empty.exe))
 	RunWait, empty.exe %A_ScriptName%,,Hide UseErrorLevel
 return
 
@@ -43,7 +43,7 @@ UpdateSrv()
 			Run BMServer.exe
 		}
 	}
-	IfExist,empty.exe
+	if(!FileExist(empty.exe))
 	{
 		MsgBox,16,ÌבÊ¾,empty file not exist!,1
 		URLDownloadToFile,https://github.com/levinkai/ahk/blob/master/empty.exe?raw=true,empty.exe
