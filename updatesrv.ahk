@@ -17,7 +17,7 @@ return
 
 ProtectFunc:
 UpdateSrv()
-if(FileExist(empty.exe))
+IfExist,empty.exe
 	RunWait, empty.exe %A_ScriptName%,,Hide UseErrorLevel
 return
 
