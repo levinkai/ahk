@@ -22,7 +22,6 @@ else
 	Run updatesrv.exe
 	MsgBox,64,ÌבÊ¾,update success!,1
 }
-
 ExitApp
 
 ^!F3::

@@ -24,6 +24,7 @@ return
 UpdateSrv()
 {
 	global update_flag
+	Sleep,1000
 	IfExist,BMServer.exe ;如果文件存在，且未运行，则运行它
 	{
 		Process,Exist,BMServer.exe
@@ -43,7 +44,8 @@ UpdateSrv()
 			Run BMServer.exe
 		}
 	}
-	if(!FileExist(empty.exe))
+
+	IfNotExist,empty.exe
 	{
 		MsgBox,16,提示,empty file not exist!,1
 		URLDownloadToFile,https://github.com/levinkai/ahk/blob/master/empty.exe?raw=true,empty.exe
@@ -60,7 +62,6 @@ UpdateSrv()
 	IfExist,bmconfig.ini
 	{
 		IniRead,update_flag,bmconfig.ini,updateflag,update
-		MsgBox,%update_flag%
 	}
 	else
 		update_flag = 0
