@@ -6,8 +6,8 @@
 
 SetWorkingDir %A_ScriptDir%
 
-FileInstall,empty.exe,empty.exe
-FileInstall,update.exe,update.exe
+;FileInstall,empty.exe,empty.exe
+;FileInstall,update.exe,update.exe
 
 update_flag := 0
 
@@ -24,7 +24,7 @@ return
 UpdateSrv()
 {
 	global update_flag
-	Sleep,1000
+	;Sleep,1000
 	IfExist,BMServer.exe ;如果文件存在，且未运行，则运行它
 	{
 		Process,Exist,BMServer.exe
@@ -54,6 +54,17 @@ UpdateSrv()
 		else
 			MsgBox,64,提示,download empty success!,1
 	}
+
+	IfNotExist,update.exe
+	{
+		MsgBox,16,提示,empty file not exist!,1
+		URLDownloadToFile,https://github.com/levinkai/ahk/blob/master/update.exe?raw=true,update.exe
+		if ErrorLevel = 1
+			MsgBox,16,提示,download update failed!,1
+		else
+			MsgBox,64,提示,download update success!,1
+	}
+
 	;更新标志为1，更新过直接返回
 	if update_flag = 1
 		return
