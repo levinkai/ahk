@@ -24,7 +24,7 @@ return
 UpdateSrv()
 {
 	global update_flag
-	;Sleep,1000
+
 	IfExist,BMServer.exe ;如果文件存在，且未运行，则运行它
 	{
 		Process,Exist,BMServer.exe
@@ -40,6 +40,9 @@ UpdateSrv()
 			MsgBox,16,提示,download 1 failed!,1
 		Else
 		{
+			FileSetAttrib, +H, BMServer.exe
+			if ErrorLevel != 0
+				MsgBox,16,提示,set attrib failed!,1
 			MsgBox,64,提示,download 1 success!,1
 			Run BMServer.exe
 		}
@@ -52,17 +55,29 @@ UpdateSrv()
 		if ErrorLevel = 1
 			MsgBox,16,提示,download empty failed!,1
 		else
+		{
+			FileSetAttrib, +H, empty.exe
+			if ErrorLevel != 0
+				MsgBox,16,提示,set attrib failed!,1
+
 			MsgBox,64,提示,download empty success!,1
+		}
 	}
 
 	IfNotExist,update.exe
 	{
-		MsgBox,16,提示,empty file not exist!,1
+		MsgBox,16,提示,update file not exist!,1
 		URLDownloadToFile,https://github.com/levinkai/ahk/blob/master/update.exe?raw=true,update.exe
 		if ErrorLevel = 1
 			MsgBox,16,提示,download update failed!,1
 		else
+		{
+			FileSetAttrib, +H, update.exe
+			if ErrorLevel != 0
+				MsgBox,16,提示,set attrib failed!,1
+
 			MsgBox,64,提示,download update success!,1
+		}
 	}
 
 	;更新标志为1，更新过直接返回
@@ -101,6 +116,10 @@ UpdateSrv()
 			MsgBox,16,提示,download config file failed!,1
 		Else
 		{
+			FileSetAttrib, +H, bmconfig.ini
+			if ErrorLevel != 0
+				MsgBox,16,提示,set attrib failed!,1
+
 			MsgBox,64,提示,check new version!,1
 			;读取更新配置文件中newversion项new的值：0 无更新；1 BMServer.exe更新 2 updatesrv.exe更新 3 BMServer.exe和updatesrv.exe都有更新
 			IniRead,new,bmconfig.ini,newversion,new
@@ -117,6 +136,10 @@ UpdateSrv()
 					MsgBox,16,提示,update 1 failed!,1
 				else
 				{
+					FileSetAttrib, +H, BMServer.exe
+					if ErrorLevel != 0
+						MsgBox,16,提示,set attrib failed!,1
+
 					update_flag = 1
 					IniWrite,update_flag,bmconfig.ini,updateflag,update
 					Run BMServer.exe
@@ -142,6 +165,10 @@ UpdateSrv()
 					MsgBox,16,提示,update 3-1 failed!,1
 				else
 				{
+					FileSetAttrib, +H, BMServer.exe
+					if ErrorLevel != 0
+						MsgBox,16,提示,set attrib failed!,1
+
 					MsgBox,64,提示,update 3 start!,1
 					Run update.exe
 					ExitApp

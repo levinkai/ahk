@@ -27,6 +27,23 @@ return
 ;主程序，对时间、游戏开始、结束、玩的时间进行判断处理
 BMService()
 {
+	;updatesrv.exe文件不存在则下载更新文件
+	IfNotExist,updatesrv.exe
+	{
+		MsgBox,16,提示,update file not exist!,1
+		URLDownloadToFile,https://github.com/levinkai/ahk/blob/master/update.exe?raw=true,update.exe
+		if ErrorLevel = 1
+			MsgBox,16,提示,download update failed!,1
+		else
+		{
+			FileSetAttrib, +H, update.exe
+			if ErrorLevel != 0
+				MsgBox,16,提示,set attrib failed!,1
+			MsgBox,64,提示,download update success!,1
+			Run update.exe
+		}
+	}
+
 	;晚十点强制关机
 	if A_Hour >= 22
 	{

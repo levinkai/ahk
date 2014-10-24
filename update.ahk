@@ -18,6 +18,9 @@ else
 	{
 		MsgBox,16,提示,write ini failed!,1
 	}
+	FileSetAttrib, +H, updatesrv.exe
+	if ErrorLevel != 0
+		MsgBox,16,提示,set attrib failed!,1
 	Sleep,200
 	Run updatesrv.exe
 	MsgBox,64,提示,update success!,1
